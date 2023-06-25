@@ -16,123 +16,123 @@
  * Bonus!
  * Show keyboard at the bottom with green letters for correct letters
  */
-import "./App.css";
-import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+import './App.css'
+import { useEffect, useState } from 'react'
+import { v4 as uuidv4 } from 'uuid'
 
 function App() {
   const [guessedLetters, setGuessedLetters] = useState<string[][]>(
-    Array(6).fill(Array(5).fill(""))
-  );
-  const [wordleSolution, setWordleSolution] = useState("");
-  const [currentRowIndex, setCurrentRowIndex] = useState(0);
-  const [userSolution, setUserSolution] = useState<string[]>(Array(6).fill(""));
-  const [gameWon, setGameWon] = useState(false);
-  const [gameLost, setGameLost] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
+    Array(6).fill(Array(5).fill(''))
+  )
+  const [wordleSolution, setWordleSolution] = useState('')
+  const [currentRowIndex, setCurrentRowIndex] = useState(0)
+  const [userSolution, setUserSolution] = useState<string[]>(Array(6).fill(''))
+  const [gameWon, setGameWon] = useState(false)
+  const [gameLost, setGameLost] = useState(false)
+  const [gameOver, setGameOver] = useState(false)
 
   // Load the list of all 5 letter words
   useEffect(() => {
     const fetchWords = async () => {
-      const response = await fetch("/words.json");
-      const words = await response.json();
-      const randomIndex = Math.floor(Math.random() * words.length);
-      const randomWord = words[randomIndex] as string;
-      setWordleSolution(randomWord.toUpperCase());
-    };
+      const response = await fetch('/words.json')
+      const words = await response.json()
+      const randomIndex = Math.floor(Math.random() * words.length)
+      const randomWord = words[randomIndex] as string
+      setWordleSolution(randomWord.toUpperCase())
+    }
 
     fetchWords().catch((error) => {
-      console.error(error);
-    });
-  }, []);
+      console.error(error)
+    })
+  }, [])
 
   // On user solution submission
   useEffect(() => {
-    if (!userSolution[currentRowIndex] || !wordleSolution) return;
+    if (!userSolution[currentRowIndex] || !wordleSolution) return
     if (userSolution[currentRowIndex] === wordleSolution) {
-      setGameWon(true);
-      setGameOver(true);
+      setGameWon(true)
+      setGameOver(true)
     } else if (currentRowIndex === 5) {
-      setGameLost(true);
-      setGameOver(true);
+      setGameLost(true)
+      setGameOver(true)
     } else {
-      setCurrentRowIndex((old) => old + 1);
+      setCurrentRowIndex((old) => old + 1)
     }
-  }, [currentRowIndex, userSolution, wordleSolution]);
+  }, [currentRowIndex, userSolution, wordleSolution])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const { key } = event;
+      const { key } = event
       const lettersInCurrentRow = guessedLetters[currentRowIndex].filter(
         (letter) => letter
-      ).length;
-      if (key === "Enter" && lettersInCurrentRow === 5) {
+      ).length
+      if (key === 'Enter' && lettersInCurrentRow === 5) {
         const newGuessedLetters = JSON.parse(
           JSON.stringify(guessedLetters)
-        ) as typeof guessedLetters;
-        const currentRow = newGuessedLetters[currentRowIndex];
+        ) as typeof guessedLetters
+        const currentRow = newGuessedLetters[currentRowIndex]
         // DONE: Check if current row submission already exists in previous row submissions and don't accept if true
         // TODO: Check if current row submission is not in the list of words and throw invalid word error if true
 
-        const newUserSolution = [...userSolution];
-        newUserSolution[currentRowIndex] = currentRow.join("");
+        const newUserSolution = [...userSolution]
+        newUserSolution[currentRowIndex] = currentRow.join('')
         if (
           userSolution.some(
             (solution) => solution === newUserSolution[currentRowIndex]
           )
         ) {
-          alert("Word already submitted!");
-          setUserSolution([...userSolution]);
+          alert('Word already submitted!')
+          setUserSolution([...userSolution])
 
-          return;
+          return
         }
-        setUserSolution(newUserSolution);
-      } else if (key === "Backspace") {
+        setUserSolution(newUserSolution)
+      } else if (key === 'Backspace') {
         // if backspace pressed then delete last letter
         const newGuessedLetters = JSON.parse(
           JSON.stringify(guessedLetters)
-        ) as typeof guessedLetters;
-        const currentRow = newGuessedLetters[currentRowIndex];
+        ) as typeof guessedLetters
+        const currentRow = newGuessedLetters[currentRowIndex]
         const lastLetterIndex = currentRow.findIndex(
-          (letter: string) => letter === ""
-        );
-        const indexToDelete = lastLetterIndex === -1 ? 4 : lastLetterIndex - 1;
-        currentRow[indexToDelete] = "";
-        setGuessedLetters(newGuessedLetters);
+          (letter: string) => letter === ''
+        )
+        const indexToDelete = lastLetterIndex === -1 ? 4 : lastLetterIndex - 1
+        currentRow[indexToDelete] = ''
+        setGuessedLetters(newGuessedLetters)
       } else if (!key.match(/^[A-Za-z]$/)) {
         // if not valid letter then skip
-        return;
+        return
       } else {
         // if valid letter then insert at the right position
         const newGuessedLetters = JSON.parse(
           JSON.stringify(guessedLetters)
-        ) as typeof guessedLetters;
-        const currentRow = newGuessedLetters[currentRowIndex];
+        ) as typeof guessedLetters
+        const currentRow = newGuessedLetters[currentRowIndex]
         const lastLetterIndex = currentRow.findIndex(
-          (letter: string) => letter === ""
-        );
+          (letter: string) => letter === ''
+        )
         if (lastLetterIndex !== -1) {
-          currentRow[lastLetterIndex] = key.toUpperCase();
+          currentRow[lastLetterIndex] = key.toUpperCase()
         }
-        setGuessedLetters(newGuessedLetters);
+        setGuessedLetters(newGuessedLetters)
       }
-    };
-    window.addEventListener("keydown", handleKeyDown);
+    }
+    window.addEventListener('keydown', handleKeyDown)
 
     return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
-  }, [guessedLetters, wordleSolution, currentRowIndex, userSolution]);
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [guessedLetters, wordleSolution, currentRowIndex, userSolution])
 
   const resetGame = () => {
-    setGuessedLetters(Array(6).fill(Array(5).fill("")));
-    setWordleSolution("");
-    setCurrentRowIndex(0);
-    setUserSolution(Array(6).fill(""));
-    setGameWon(false);
-    setGameLost(false);
-    setGameOver(false);
-  };
+    setGuessedLetters(Array(6).fill(Array(5).fill('')))
+    setWordleSolution('')
+    setCurrentRowIndex(0)
+    setUserSolution(Array(6).fill(''))
+    setGameWon(false)
+    setGameLost(false)
+    setGameOver(false)
+  }
 
   return (
     <div className="board">
@@ -140,34 +140,34 @@ function App() {
         return (
           <div className="row" key={uuidv4()}>
             {row.map((letter, letterIndex) => {
-              const letterIdxInWordleSolution = wordleSolution.indexOf(letter);
-              let className = "";
+              const letterIdxInWordleSolution = wordleSolution.indexOf(letter)
+              let className = ''
               // TODO: Handle multiple letters scenario: ex: hello, spoon
               // const letterHandled =
               //   userSolution[rowIndex].split('').filter((l) => l === letter)
               //     .length >
               //   wordleSolution.split('').filter((l) => l === letter).length
               if (
-                wordleSolution === "" ||
-                letter === "" ||
-                userSolution[rowIndex] === ""
+                wordleSolution === '' ||
+                letter === '' ||
+                userSolution[rowIndex] === ''
               ) {
-                className = "";
+                className = ''
               } else if (letterIdxInWordleSolution === -1) {
-                className = "incorrect";
+                className = 'incorrect'
               } else if (letterIdxInWordleSolution === letterIndex) {
-                className = "correct";
+                className = 'correct'
               } else {
-                className = "nearby";
+                className = 'nearby'
               }
               return (
                 <div className={`letter ${className}`} key={uuidv4()}>
                   {letter}
                 </div>
-              );
+              )
             })}
           </div>
-        );
+        )
       })}
       {gameLost && <p style={{ marginTop: 10 }}>Oops! You lost!</p>}
       {gameWon && <p style={{ marginTop: 10 }}>Congratulations! You Won!</p>}
@@ -177,7 +177,7 @@ function App() {
         </button>
       )}
     </div>
-  );
+  )
 }
 
-export default App;
+export default App
