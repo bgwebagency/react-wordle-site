@@ -58,8 +58,7 @@ function App() {
     } else {
       setCurrentRowIndex((old) => old + 1)
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userSolution, wordleSolution])
+  }, [currentRowIndex, userSolution, wordleSolution])
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -72,10 +71,21 @@ function App() {
           JSON.stringify(guessedLetters)
         ) as typeof guessedLetters
         const currentRow = newGuessedLetters[currentRowIndex]
-        // TODO: Check if current row submission already exists in previous row submissions and don't accept if true
+        // DONE: Check if current row submission already exists in previous row submissions and don't accept if true
         // TODO: Check if current row submission is not in the list of words and throw invalid word error if true
+
         const newUserSolution = [...userSolution]
         newUserSolution[currentRowIndex] = currentRow.join('')
+
+        if (
+          userSolution.some(
+            (solution) => solution === newUserSolution[currentRowIndex]
+          )
+        ) {
+          alert('Word already submitted!')
+          return
+        }
+
         setUserSolution(newUserSolution)
       } else if (key === 'Backspace') {
         // if backspace pressed then delete last letter
