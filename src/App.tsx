@@ -34,6 +34,7 @@ function App() {
 	const [wordList, setWordList] = useState<string[]>([])
 	// Added state for invalid word error
 	const [invalidWordError, setInvalidWordError] = useState(false)
+	const [invalidWordRowIndex, setInvalidWordRowIndex] = useState(-1)
 
 	// Load the list of all 5 letter words
 	useEffect(() => {
@@ -66,7 +67,7 @@ function App() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userSolution, wordleSolution])
-
+	console.log({ currentRowIndex })
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const { key } = event
@@ -85,6 +86,7 @@ function App() {
 				const isValidWord = wordList.includes(currentRow.join('').toLowerCase())
 				if (!isValidWord) {
 					setInvalidWordError(true)
+					setInvalidWordRowIndex(currentRowIndex) // Store the index of the invalid word
 				}
 
 				const newUserSolution = [...userSolution]
@@ -95,6 +97,7 @@ function App() {
 				const newGuessedLetters = JSON.parse(
 					JSON.stringify(guessedLetters),
 				) as typeof guessedLetters
+
 				const currentRow = newGuessedLetters[currentRowIndex]
 				const lastLetterIndex = currentRow.findIndex(
 					(letter: string) => letter === '',
@@ -158,7 +161,7 @@ function App() {
 								wordleSolution === '' ||
 								letter === '' ||
 								userSolution[rowIndex] === '' ||
-								invalidWordError
+								(invalidWordError && rowIndex === invalidWordRowIndex)
 							) {
 								className = ''
 							} else if (letterIdxInWordleSolution === -1) {
