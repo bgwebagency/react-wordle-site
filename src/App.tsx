@@ -51,7 +51,7 @@ function App() {
 			console.error(error)
 		})
 	}, [])
-	console.log({ wordleSolution })
+
 	// On user solution submission
 	useEffect(() => {
 		if (!userSolution[currentRowIndex] || !wordleSolution) return
@@ -66,7 +66,7 @@ function App() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userSolution, wordleSolution])
-	console.log({ userSolution })
+
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const { key } = event
@@ -78,10 +78,10 @@ function App() {
 					JSON.stringify(guessedLetters),
 				) as typeof guessedLetters
 				const currentRow = newGuessedLetters[currentRowIndex]
-				console.log({ currentRow })
+
 				// TODO: Check if current row submission already exists in previous row submissions and don't accept if true
 
-				// TODO: Check if current row submission is not in the list of words and throw invalid word error if true
+				//Check if current row submission is not in the list of words and throw invalid word error if true
 				const isValidWord = wordList.includes(currentRow.join('').toLowerCase())
 				if (!isValidWord) {
 					setInvalidWordError(true)
@@ -90,7 +90,6 @@ function App() {
 				const newUserSolution = [...userSolution]
 				newUserSolution[currentRowIndex] = currentRow.join('')
 				setUserSolution(newUserSolution)
-				console.log({ newUserSolution })
 			} else if (key === 'Backspace') {
 				// if backspace pressed then delete last letter
 				const newGuessedLetters = JSON.parse(
