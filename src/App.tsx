@@ -31,6 +31,10 @@ function App() {
 	const [gameLost, setGameLost] = useState(false)
 	const [gameOver, setGameOver] = useState(false)
 
+	const [wordList, setWordList] = useState<string[]>([])
+	// Added state for invalid word error
+	const [invalidWordError, setInvalidWordError] = useState(false)
+
 	// Load the list of all 5 letter words
 	useEffect(() => {
 		const fetchWords = async () => {
@@ -39,13 +43,15 @@ function App() {
 			const randomIndex = Math.floor(Math.random() * words.length)
 			const randomWord = words[randomIndex] as string
 			setWordleSolution(randomWord.toUpperCase())
+			// set word list for row submission validation
+			setWordList(words)
 		}
 
 		fetchWords().catch(error => {
 			console.error(error)
 		})
 	}, [])
-
+	console.log({ wordleSolution })
 	// On user solution submission
 	useEffect(() => {
 		if (!userSolution[currentRowIndex] || !wordleSolution) return
@@ -60,7 +66,7 @@ function App() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userSolution, wordleSolution])
-
+	console.log({ userSolution })
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const { key } = event
@@ -72,11 +78,19 @@ function App() {
 					JSON.stringify(guessedLetters),
 				) as typeof guessedLetters
 				const currentRow = newGuessedLetters[currentRowIndex]
+				console.log({ currentRow })
 				// TODO: Check if current row submission already exists in previous row submissions and don't accept if true
+
 				// TODO: Check if current row submission is not in the list of words and throw invalid word error if true
+				const isValidWord = wordList.includes(currentRow.join('').toLowerCase())
+				if (!isValidWord) {
+					setInvalidWordError(true)
+				}
+
 				const newUserSolution = [...userSolution]
 				newUserSolution[currentRowIndex] = currentRow.join('')
 				setUserSolution(newUserSolution)
+				console.log({ newUserSolution })
 			} else if (key === 'Backspace') {
 				// if backspace pressed then delete last letter
 				const newGuessedLetters = JSON.parse(
@@ -126,6 +140,10 @@ function App() {
 
 	return (
 		<div className="board">
+			<p className={`${invalidWordError ? 'visible' : 'invisible'}`}>
+				Not in word list!
+			</p>
+
 			{guessedLetters.map((row, rowIndex) => {
 				return (
 					<div className="row" key={uuidv4()}>
@@ -140,7 +158,8 @@ function App() {
 							if (
 								wordleSolution === '' ||
 								letter === '' ||
-								userSolution[rowIndex] === ''
+								userSolution[rowIndex] === '' ||
+								invalidWordError
 							) {
 								className = ''
 							} else if (letterIdxInWordleSolution === -1) {
