@@ -76,6 +76,7 @@ function App() {
 				// TODO: Check if current row submission is not in the list of words and throw invalid word error if true
 				const newUserSolution = [...userSolution]
 				newUserSolution[currentRowIndex] = currentRow.join('')
+
 				if (
 					userSolution.some(
 						solution => solution === newUserSolution[currentRowIndex],
@@ -84,6 +85,7 @@ function App() {
 					alert('Word already submitted!')
 					return
 				}
+
 				setUserSolution(newUserSolution)
 			} else if (key === 'Backspace') {
 				// if backspace pressed then delete last letter
