@@ -67,7 +67,7 @@ function App() {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [userSolution, wordleSolution])
-	console.log({ currentRowIndex })
+
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			const { key } = event
