@@ -87,6 +87,7 @@ function App() {
 				if (!isValidWord) {
 					setInvalidWordError(true)
 					setInvalidWordRowIndex(currentRowIndex) // Store the index of the invalid word
+					return // prevent user going to next row after invalid error thrown
 				}
 
 				const newUserSolution = [...userSolution]
