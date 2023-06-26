@@ -31,6 +31,11 @@ function App() {
 	const [gameLost, setGameLost] = useState(false)
 	const [gameOver, setGameOver] = useState(false)
 
+	const [wordList, setWordList] = useState<string[]>([])
+	// Added state for invalid word error
+	const [invalidWordError, setInvalidWordError] = useState(false)
+	const [invalidWordRowIndex, setInvalidWordRowIndex] = useState(-1)
+
 	// Load the list of all 5 letter words
 	useEffect(() => {
 		const fetchWords = async () => {
@@ -39,6 +44,8 @@ function App() {
 			const randomIndex = Math.floor(Math.random() * words.length)
 			const randomWord = words[randomIndex] as string
 			setWordleSolution(randomWord.toUpperCase())
+			// set word list for row submission validation
+			setWordList(words)
 		}
 
 		fetchWords().catch(error => {
@@ -72,8 +79,17 @@ function App() {
 					JSON.stringify(guessedLetters),
 				) as typeof guessedLetters
 				const currentRow = newGuessedLetters[currentRowIndex]
+
 				// TODO: Check if current row submission already exists in previous row submissions and don't accept if true
-				// TODO: Check if current row submission is not in the list of words and throw invalid word error if true
+
+				//Check if current row submission is not in the list of words and throw invalid word error if true
+				const isValidWord = wordList.includes(currentRow.join('').toLowerCase())
+				if (!isValidWord) {
+					setInvalidWordError(true)
+					setInvalidWordRowIndex(currentRowIndex) // Store the index of the invalid word
+					return // prevent user going to next row after invalid error thrown
+				}
+
 				const newUserSolution = [...userSolution]
 				newUserSolution[currentRowIndex] = currentRow.join('')
 
@@ -92,6 +108,7 @@ function App() {
 				const newGuessedLetters = JSON.parse(
 					JSON.stringify(guessedLetters),
 				) as typeof guessedLetters
+
 				const currentRow = newGuessedLetters[currentRowIndex]
 				const lastLetterIndex = currentRow.findIndex(
 					(letter: string) => letter === '',
@@ -136,6 +153,10 @@ function App() {
 
 	return (
 		<div className="board">
+			<p className={`${invalidWordError ? 'visible' : 'invisible'}`}>
+				Not in word list!
+			</p>
+
 			{guessedLetters.map((row, rowIndex) => {
 				return (
 					<div className="row" key={uuidv4()}>
@@ -150,7 +171,8 @@ function App() {
 							if (
 								wordleSolution === '' ||
 								letter === '' ||
-								userSolution[rowIndex] === ''
+								userSolution[rowIndex] === '' ||
+								(invalidWordError && rowIndex === invalidWordRowIndex)
 							) {
 								className = ''
 							} else if (letterIdxInWordleSolution === -1) {
