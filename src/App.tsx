@@ -19,6 +19,7 @@
 import './App.css'
 import { useEffect, useState } from 'react'
 import { v4 as uuidv4 } from 'uuid'
+import Alert from './Alert'
 
 function App() {
 	const [guessedLetters, setGuessedLetters] = useState<string[][]>(
@@ -30,17 +31,20 @@ function App() {
 	const [gameWon, setGameWon] = useState(false)
 	const [gameLost, setGameLost] = useState(false)
 	const [gameOver, setGameOver] = useState(false)
+	const [helperText, setHelperText] = useState('')
+	const [words, setWords] = useState<string[]>([])
+
+	const fetchWords = async () => {
+		const response = await fetch('/words.json')
+		const words = (await response.json()) as string[]
+		const randomIndex = Math.floor(Math.random() * words.length)
+		const randomWord = words[randomIndex]
+		setWordleSolution(randomWord.toUpperCase())
+		setWords(words)
+	}
 
 	// Load the list of all 5 letter words
 	useEffect(() => {
-		const fetchWords = async () => {
-			const response = await fetch('/words.json')
-			const words = await response.json()
-			const randomIndex = Math.floor(Math.random() * words.length)
-			const randomWord = words[randomIndex] as string
-			setWordleSolution(randomWord.toUpperCase())
-		}
-
 		fetchWords().catch(error => {
 			console.error(error)
 		})
@@ -72,8 +76,6 @@ function App() {
 					JSON.stringify(guessedLetters),
 				) as typeof guessedLetters
 				const currentRow = newGuessedLetters[currentRowIndex]
-				// TODO: Check if current row submission already exists in previous row submissions and don't accept if true
-				// TODO: Check if current row submission is not in the list of words and throw invalid word error if true
 				const newUserSolution = [...userSolution]
 				newUserSolution[currentRowIndex] = currentRow.join('')
 
@@ -82,8 +84,17 @@ function App() {
 						solution => solution === newUserSolution[currentRowIndex],
 					)
 				) {
-					alert('Word already submitted!')
+					setHelperText('Word already submitted!')
 					return
+				} else {
+					setHelperText('')
+				}
+
+				if (!words.includes(newUserSolution[currentRowIndex].toLowerCase())) {
+					setHelperText('Not in word list!')
+					return
+				} else {
+					setHelperText('')
 				}
 
 				setUserSolution(newUserSolution)
@@ -122,7 +133,7 @@ function App() {
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown)
 		}
-	}, [guessedLetters, wordleSolution, currentRowIndex, userSolution])
+	}, [guessedLetters, wordleSolution, currentRowIndex, userSolution, words])
 
 	const resetGame = () => {
 		setGuessedLetters(Array(6).fill(Array(5).fill('')))
@@ -132,50 +143,58 @@ function App() {
 		setGameWon(false)
 		setGameLost(false)
 		setGameOver(false)
+
+		fetchWords().catch(error => {
+			console.error(error)
+		})
 	}
 
 	return (
-		<div className="board">
-			{guessedLetters.map((row, rowIndex) => {
-				return (
-					<div className="row" key={uuidv4()}>
-						{row.map((letter, letterIndex) => {
-							const letterIdxInWordleSolution = wordleSolution.indexOf(letter)
-							let className = ''
-							// TODO: Handle multiple letters scenario: ex: hello, spoon
-							// const letterHandled =
-							//   userSolution[rowIndex].split('').filter((l) => l === letter)
-							//     .length >
-							//   wordleSolution.split('').filter((l) => l === letter).length
-							if (
-								wordleSolution === '' ||
-								letter === '' ||
-								userSolution[rowIndex] === ''
-							) {
-								className = ''
-							} else if (letterIdxInWordleSolution === -1) {
-								className = 'incorrect'
-							} else if (letterIdxInWordleSolution === letterIndex) {
-								className = 'correct'
-							} else {
-								className = 'nearby'
-							}
-							return (
-								<div className={`letter ${className}`} key={uuidv4()}>
-									{letter}
-								</div>
-							)
-						})}
-					</div>
-				)
-			})}
-			{gameLost && <p style={{ marginTop: 10 }}>Oops! You lost!</p>}
-			{gameWon && <p style={{ marginTop: 10 }}>Congratulations! You Won!</p>}
-			{gameOver && (
-				<button onClick={resetGame} style={{ marginTop: 10 }}>
-					Play Again
-				</button>
-			)}
+		<div className="App">
+			<Alert callback={() => setHelperText('')}>{helperText}</Alert>
+			{gameLost && <Alert timeout={false}>{wordleSolution}</Alert>}
+			<div className="board">
+				{guessedLetters.map((row, rowIndex) => {
+					return (
+						<div className="row" key={uuidv4()}>
+							{row.map((letter, letterIndex) => {
+								const letterIdxInWordleSolution = wordleSolution.indexOf(letter)
+								let className = ''
+								// TODO: Handle multiple letters scenario: ex: hello, spoon
+								// const letterHandled =
+								//   userSolution[rowIndex].split('').filter((l) => l === letter)
+								//     .length >
+								//   wordleSolution.split('').filter((l) => l === letter).length
+								if (
+									wordleSolution === '' ||
+									letter === '' ||
+									userSolution[rowIndex] === ''
+								) {
+									className = ''
+								} else if (letterIdxInWordleSolution === -1) {
+									className = 'incorrect'
+								} else if (letterIdxInWordleSolution === letterIndex) {
+									className = 'correct'
+								} else {
+									className = 'nearby'
+								}
+								return (
+									<div className={`letter ${className}`} key={uuidv4()}>
+										{letter}
+									</div>
+								)
+							})}
+						</div>
+					)
+				})}
+				{gameLost && <p style={{ marginTop: 10 }}>Oops! You lost!</p>}
+				{gameWon && <p style={{ marginTop: 10 }}>Congratulations! You Won!</p>}
+				{gameOver && (
+					<button onClick={resetGame} style={{ marginTop: 10 }}>
+						Play Again
+					</button>
+				)}
+			</div>
 		</div>
 	)
 }
